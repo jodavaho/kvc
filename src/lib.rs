@@ -103,4 +103,16 @@ mod tests{
             }
         }
     }
+    #[test]
+    fn test_line_ignores_comments(){
+        let (counts,strs) =read_kvc_line_default(&" A # A A B  B C Z:4 Y:2 Y:3 ".to_string());
+        assert_eq!(strs.len(),0);
+        assert_eq!(counts.len(),1);
+        for (key,val) in counts{
+            match &key[..]{
+                "A"=>assert_eq!(val,1.0),
+                _=>panic!("Found unexpected token:{}",key)
+            }
+        }
+    }
 }
