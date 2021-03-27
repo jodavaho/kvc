@@ -1,6 +1,6 @@
 [package]
 name = "kvc"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Josh Vander Hook <josh@vanderhook.info>"]
 edition = "2018"
 description = "Very simple key-value-count tools to go from / to pandas data frames or streaming formats"
@@ -9,3 +9,5 @@ homepage = "https://github.com/jodavaho/kvc"
 
 
 [dependencies]
+regex="1.4.0"
+clap ="2.33.0"
