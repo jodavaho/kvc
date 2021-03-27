@@ -4,7 +4,7 @@ use std::vec::Vec;
 use std::io::stdout;
 use std::collections::HashMap;
 use std::collections::HashSet;
-use clap::{Arg, App};
+use clap::App;
 
 fn main()
 {

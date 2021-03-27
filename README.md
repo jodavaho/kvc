@@ -11,7 +11,7 @@ I use this library to parse simple journal-like logs where each line is of the f
 Supposing I wanted to do some processing on this data. This is a very readable / writeable format, but is not standard.
 
 We can use 
-`kvc-stretch` to covert it into something more lika a [stream of k-value pairs](https://www.edureka.co/blog/kafka-streams/#stream) 
+`kvc-stream` to covert it into something more lika a [stream of k-value pairs](https://www.edureka.co/blog/kafka-streams/#stream) 
 or 
 `kvc-df` to convert it to a [pandas dataframe](https://pandas.pydata.org/pandas-docs/stable/getting_started/intro_tutorials/01_table_oriented.html#min-tut-01-tableoriented)
 
@@ -34,14 +34,32 @@ event event
 2021-04-02 # Nothing happened that day
 ```
 
-Running kda-stretch on the above data produces:
+Running kda-stream on the above data produces:
 
 ```
+1 a 1
+2 event 2
+3 Date 2021-04-01
+3 april_fools_pranks 4
+4 Date 2021-03-01
+4 <weird-symbols_ar_ok!> 1
+4 a-third-key 1
+4 this_has_occured_three_times 3
+4 this_twice 2
+4 key 1
+4 another_key 1
+5 Date 2021-04-02
 ```
 
 Running kda-df produces:
 
 ```
+Idx  april_fools_pranks  this_twice  a    <weird-symbols_ar_ok!>  event  Date        a-third-key  key  this_has_occured_three_times  another_key
+1    N/A                 N/A         1    N/A                     N/A    N/A         N/A          N/A  N/A                           N/A
+2    N/A                 N/A         N/A  N/A                     2      N/A         N/A          N/A  N/A                           N/A
+3    4                   N/A         N/A  N/A                     N/A    2021-04-01  N/A          N/A  N/A                           N/A
+4    N/A                 2           N/A  1                       N/A    2021-03-01  1            1    3                             1
+5    N/A                 N/A         N/A  N/A                     N/A    2021-04-02  N/A          N/A  N/A                           N/A
 ```
 
 I use this to keep a journal of events and easily scrape it for analysis in other programs or databases. 
