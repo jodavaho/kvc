@@ -34,7 +34,9 @@ event event
 2021-04-02 # Nothing happened that day
 ```
 
-Running kda-stream on the above data produces:
+Suppose that's stored in `data.txt`. (try it!)
+
+Running `<data.txt kvc-stream` produces:
 
 ```
 1 a 1
@@ -51,7 +53,7 @@ Running kda-stream on the above data produces:
 5 Date 2021-04-02
 ```
 
-Running kda-df produces:
+Running `cat data.txt | kvc-df` (or ` < data.txt kvc-df ` ) produces: 
 
 ```
 Idx  april_fools_pranks  this_twice  a    <weird-symbols_ar_ok!>  event  Date        a-third-key  key  this_has_occured_three_times  another_key
@@ -61,5 +63,7 @@ Idx  april_fools_pranks  this_twice  a    <weird-symbols_ar_ok!>  event  Date   
 4    N/A                 2           N/A  1                       N/A    2021-03-01  1            1    3                             1
 5    N/A                 N/A         N/A  N/A                     N/A    2021-04-02  N/A          N/A  N/A                           N/A
 ```
+
+OK, so I actually aligned the text with ` cat data.txt | kvc-dv | column -t `
 
 I use this to keep a journal of events and easily scrape it for analysis in other programs or databases. 
