@@ -5,9 +5,10 @@ use std::io::BufRead;
 use std::io::Lines;
 
 pub fn version() -> String{
-    return "0.2.0".to_string();
+    return "0.4.0".to_string();
 }
 
+// OK 0.4
 pub fn get_reserved_matchers() -> HashMap<String,regex::Regex>
 {
     let mut retvals:HashMap<String,regex::Regex> = HashMap::new();
@@ -17,17 +18,30 @@ pub fn get_reserved_matchers() -> HashMap<String,regex::Regex>
     retvals
 }
 
-pub fn read_kvc_line_default( input_line: &String ) -> (HashMap<String,f32> , HashMap<String,String> )
+//TODO 0.4: return vec of tuples
+pub fn read_kvc_line_default( input_line: &String ) -> 
+(
+    Vec<(String,f32)>,
+    Vec<(String,String)>
+)
 {
     read_kvc_line( input_line, &get_reserved_matchers())
 }
 
-pub fn read_kvc_line( input_line: &String, keywords: &HashMap<String,regex::Regex> ) -> (HashMap<String,f32> , HashMap<String,String> )
+//TODO 0.4: return vec of tuples
+pub fn read_kvc_line( input_line: &String, keywords: &HashMap<String,regex::Regex> ) -> 
+(
+    Vec<(String,f32)>,
+    Vec<(String,String)>
+)
 {
     let mut line_strings: HashMap<String,String> = HashMap::new();
     let mut line_counter: HashMap<String,f32> = HashMap::new();
     if input_line.len()==0 {
-        return (line_counter,line_strings);
+        return (
+            line_counter.into_iter().map(|(key,val)| (key,val)).collect(),
+            line_strings.into_iter().map(|(key,val)| (key,val)).collect(),
+        );
     }
     let mut tok_iter = input_line.split_whitespace();
     'nexttok: while let Some(kvpair) = tok_iter.next(){
@@ -71,17 +85,19 @@ pub fn read_kvc_line( input_line: &String, keywords: &HashMap<String,regex::Rege
             panic!("Bug! Cannot process: '{}' from '{}'",kvpair,input_line);
         }
     }
-    return (line_counter,line_strings);
+    return (
+        line_counter.into_iter().map(|(key,val)| (key,val)).collect(),
+        line_strings.into_iter().map(|(key,val)| (key,val)).collect(),
+    );
 }
 
 pub fn load_table_from_kvc_stream<B:BufRead> (
     lines_input:Lines<B>, 
     keywords :&HashMap<String,regex::Regex> )->
 (
-    usize, //n rows
-    HashMap<(usize,usize),f32> , // data_entries
-    HashMap<usize,String>, //col_to_name
-    HashMap<String,usize> //name_to_col
+    (usize,usize),  //size
+    Vec<((usize,usize),f32)> , // data_entries
+    Vec<String>  // col_names
 )
 {
     let mut rows = 0;
@@ -107,14 +123,30 @@ pub fn load_table_from_kvc_stream<B:BufRead> (
             }
         }
     }
-    return (rows,data_entries,col_to_name,name_to_col);
+
+    //trial by fire: Assume the hash map is correctly set up 0..col_to_name.len() 
+    let cols = col_to_name.len();
+    let mut col_names:Vec<String> = vec!["".to_string(); cols];
+    for (idx,name) in col_to_name{
+        assert!(col_names[idx].len()==0,"Found non-zero column name! Error in read_kvc_line?");
+        col_names[idx]+=&name.to_string();
+    }
+    for idx in 0..cols{
+        assert!(col_names[idx].len()!=0,"Found zero-length column name! Error in read_kvc_line?")
+    }
+
+    return ( 
+        (rows,cols),
+        data_entries.into_iter().map(|x| x).collect(),
+        col_names 
+    )
 }
+
 pub fn load_table_from_kvc_stream_default<B:BufRead> (lines_input:Lines<B>)->
 (
-    usize, //n rows
-    HashMap<(usize,usize),f32> , // data_entries
-    HashMap<usize,String>, //col_to_name
-    HashMap<String,usize> //name_to_col
+    (usize,usize),
+    Vec<((usize,usize),f32)> , // data_entries
+    Vec<String> // col_names
 )
 {
     return load_table_from_kvc_stream(lines_input, &get_reserved_matchers());
