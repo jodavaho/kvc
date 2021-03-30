@@ -1,6 +1,8 @@
 
 extern crate regex;
 use std::collections::HashMap;
+use std::io::BufRead;
+use std::io::Lines;
 
 pub fn version() -> String{
     return "0.2.0".to_string();
@@ -70,6 +72,52 @@ pub fn read_kvc_line( input_line: &String, keywords: &HashMap<String,regex::Rege
         }
     }
     return (line_counter,line_strings);
+}
+
+pub fn load_table_from_kvc_stream<B:BufRead> (
+    lines_input:Lines<B>, 
+    keywords :&HashMap<String,regex::Regex> )->
+(
+    usize, //n rows
+    HashMap<(usize,usize),f32> , // data_entries
+    HashMap<usize,String>, //col_to_name
+    HashMap<String,usize> //name_to_col
+)
+{
+    let mut rows = 0;
+    let mut col_to_name: HashMap<usize,String> = HashMap::new();
+    let mut name_to_col: HashMap<String,usize> = HashMap::new();
+    let mut data_entries: HashMap<(usize,usize),f32> = HashMap::new();
+
+    for line_res in lines_input{
+        let line = match line_res{
+            Ok(l)=>l,
+            Err(_)=>"".to_string(),
+        };
+        let (key_counts,_)=read_kvc_line(&line,&keywords);
+        if key_counts.len()> 0
+        {
+            rows+=1;
+            for (key,count) in key_counts{
+                let colsize = name_to_col.len();
+                let colidx = name_to_col.entry(key.to_string()).or_insert(colsize);
+                col_to_name.insert(*colidx,key.to_string());
+                let cur_count_ref = data_entries.entry( (rows,*colidx)).or_insert(0.0);
+                *cur_count_ref = *cur_count_ref + count;
+            }
+        }
+    }
+    return (rows,data_entries,col_to_name,name_to_col);
+}
+pub fn load_table_from_kvc_stream_default<B:BufRead> (lines_input:Lines<B>)->
+(
+    usize, //n rows
+    HashMap<(usize,usize),f32> , // data_entries
+    HashMap<usize,String>, //col_to_name
+    HashMap<String,usize> //name_to_col
+)
+{
+    return load_table_from_kvc_stream(lines_input, &get_reserved_matchers());
 }
 
 #[cfg(test)]

@@ -1,7 +1,13 @@
+# 0.3.0
+- Added functions to load an entire kvc file into sparse table
+
+# 0.2.0 
+
+- Added basic stream and dataframe convesions
+
 # 0.1.0
 
 - Initial import of bare files
 
 ## Known Issues:
 
-- This library is unusable in this form
