@@ -1,9 +1,17 @@
+use clap::App;
 use std::io::BufRead;
 use std::io::Write;
 use std::io::stdout;
 
 fn main()
 {
+    let _ = App::new("kvc-stream")
+        .version(&kvc::version()[..])
+        .author("Joshua Vander Hook <josh@vanderhook.info>")
+        .about("Converts a KVC journal to a stream of idx-key-val triplets, like this `<file.txt kvc-stream`.")
+        .get_matches();
+
+    eprintln!("Warning: This tool is in early development");
     let mut line_count = 0;  
     let sin = std::io::stdin();
     let keywords = kvc::get_reserved_matchers();

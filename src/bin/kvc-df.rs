@@ -9,7 +9,7 @@ fn main()
     let _ = App::new("kvc-df")
         .version(&kvc::version()[..])
         .author("Joshua Vander Hook <josh@vanderhook.info>")
-        .about("Converts a KVC stream to a Data Frame, like this `<file.txt kvc-df`. There's a special case here, that the first row MUST CONTAIN all the keys that will follow")
+        .about("Converts a KVC stream to a Data Frame, like this `<file.txt kvc-df`. ")
         .get_matches();
 
     eprintln!("Warning: This tool is in early development");

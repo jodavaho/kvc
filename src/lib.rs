@@ -18,7 +18,7 @@ pub fn get_reserved_matchers() -> HashMap<String,regex::Regex>
     retvals
 }
 
-//TODO 0.4: return vec of tuples
+//TODO 0.4: [x] return vec of tuples
 pub fn read_kvc_line_default( input_line: &String ) -> 
 (
     Vec<(String,f32)>,
@@ -28,7 +28,7 @@ pub fn read_kvc_line_default( input_line: &String ) ->
     read_kvc_line( input_line, &get_reserved_matchers())
 }
 
-//TODO 0.4: return vec of tuples
+//TODO 0.4: [x] return vec of tuples
 pub fn read_kvc_line( input_line: &String, keywords: &HashMap<String,regex::Regex> ) -> 
 (
     Vec<(String,f32)>,
@@ -154,7 +154,8 @@ pub fn load_table_from_kvc_stream_default<B:BufRead> (lines_input:Lines<B>)->
 
 #[cfg(test)]
 mod tests{
-    use super::*;
+use super::*;
+use std::io::Cursor;
     #[test]
     fn test_keywords_are_returned(){
         assert_eq!(get_reserved_matchers().len(),1);
@@ -194,5 +195,14 @@ mod tests{
                 _=>panic!("Found unexpected token:{}",key)
             }
         }
+    }
+    #[test]
+    fn test_table_size(){
+        let data =Cursor::new( "A # NO\n A A # \n A A A\n\n" );
+        let ( (r,c) ,_entries,names)=load_table_from_kvc_stream_default(data.lines());
+        assert_eq!(r,3);
+        assert_eq!(c,1);
+        assert_eq!(names[0],"A");
+        assert_eq!(names.len(),c);
     }
 }
