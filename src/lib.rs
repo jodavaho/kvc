@@ -116,16 +116,21 @@ pub fn load_table_from_kvc_stream<B:BufRead> (
     let mut string_entries: HashMap< (usize,usize), String> = HashMap::new();
 
     for line_res in lines_input{
+        //check for bad line
         let line = match line_res{
             Ok(l)=>l,
             Err(_)=> continue,
         };
+        //parse it (or try)
         let (key_counts,key_strings)=read_kvc_line(&line,&keywords,start_sequence);
+
+        //see if we got nothing, if so skip it
         if key_counts.len() + key_strings.len()==0
         {
             continue;
         } 
-        rows+=1;
+
+        //record what we may have gotten
         for (key,val) in key_strings{
             let colsize = name_to_col.len();
             let colidx = name_to_col.entry(key.to_string()).or_insert(colsize);
@@ -138,6 +143,8 @@ pub fn load_table_from_kvc_stream<B:BufRead> (
             col_to_name.insert(*colidx,key.to_string());
             string_entries.insert( (rows,*colidx), count.to_string());
         }
+        //record that we tallied a row
+        rows+=1;
     }
 
     //trial by fire: Assume the hash map is correctly set up 0..col_to_name.len() 
@@ -220,5 +227,30 @@ use std::io::Cursor;
         assert_eq!(c,1);
         assert_eq!(names[0],"A");
         assert_eq!(names.len(),c);
+    }
+    #[test]
+    fn test_date_matches_only_date(){
+        let data=Cursor::new(" 2021-01-01AAAAAA \n 2021-01-012021-01-02 \n 2021-02-02      ");
+        let ((r,c), entries,names)=load_table_from_kvc_stream_default(data.lines());
+        //should get three entries. Two weirdly named tokens and one Date
+        assert_eq!(r,3);
+        assert_eq!(c,3);
+        assert_eq!(names[0],"2021-01-01AAAAAA");
+        assert_eq!(names[1],"2021-01-012021-01-02");
+        assert_eq!(names[2],"Date");
+        assert_eq!(entries.len(),3);
+
+        for (idx, entry) in entries{
+            eprintln!("Checking {}",entry);
+            match idx{
+                (0,0)=>assert_eq!(entry,(1.0).to_string()),
+                (1,1)=>assert_eq!(entry,(1.0).to_string()),
+                (2,2)=>assert_eq!(entry,"2021-02-02"),
+                _=>{
+                    let (i,j)=idx;
+                    panic!("Found unexpected entry: ({},{}) {}",i,j,entry);
+                }
+            }
+        }
     }
 }

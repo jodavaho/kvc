@@ -45,9 +45,9 @@ fn main()
     }
     writeln!(stdout(),"").unwrap_or(());
 
-    //rows are 1-indexed
-    for row in 1..row_max+1{
-        write!(stdout(),"{:>10}",std::format!("{}",row)).unwrap_or(());
+    for row in 0..row_max{
+        //index by 1
+        write!(stdout(),"{:>10}",std::format!("{}",row+1)).unwrap_or(());
         for col in 0..col_max{
             if lookup_entries.contains_key( &(row,col) ){
                 let val = lookup_entries.get( &(row,col) ).unwrap();
