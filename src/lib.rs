@@ -14,7 +14,7 @@ pub fn get_reserved_matchers() -> HashMap<String,regex::Regex>
     let mut retvals:HashMap<String,regex::Regex> = HashMap::new();
     retvals.insert(
         "Date".to_string(),
-        regex::Regex::new(r"\d{4}-\d{2}-\d{2}").unwrap());
+        regex::Regex::new(r"^\d{4}-\d{2}-\d{2}$").unwrap());
     retvals
 }
 
@@ -106,31 +106,37 @@ pub fn load_table_from_kvc_stream<B:BufRead> (
 )->
 (
     (usize,usize),  //size
-    Vec<((usize,usize),f32)> , // data_entries
+    Vec<((usize,usize),String)> , //entries
     Vec<String>  // col_names
 )
 {
     let mut rows = 0;
     let mut col_to_name: HashMap<usize,String> = HashMap::new();
     let mut name_to_col: HashMap<String,usize> = HashMap::new();
-    let mut data_entries: HashMap<(usize,usize),f32> = HashMap::new();
+    let mut string_entries: HashMap< (usize,usize), String> = HashMap::new();
 
     for line_res in lines_input{
         let line = match line_res{
             Ok(l)=>l,
-            Err(_)=>"".to_string(),
+            Err(_)=> continue,
         };
-        let (key_counts,_)=read_kvc_line(&line,&keywords,start_sequence);
-        if key_counts.len()> 0
+        let (key_counts,key_strings)=read_kvc_line(&line,&keywords,start_sequence);
+        if key_counts.len() + key_strings.len()==0
         {
-            rows+=1;
-            for (key,count) in key_counts{
-                let colsize = name_to_col.len();
-                let colidx = name_to_col.entry(key.to_string()).or_insert(colsize);
-                col_to_name.insert(*colidx,key.to_string());
-                let cur_count_ref = data_entries.entry( (rows,*colidx)).or_insert(0.0);
-                *cur_count_ref = *cur_count_ref + count;
-            }
+            continue;
+        } 
+        rows+=1;
+        for (key,val) in key_strings{
+            let colsize = name_to_col.len();
+            let colidx = name_to_col.entry(key.to_string()).or_insert(colsize);
+            col_to_name.insert(*colidx,key.to_string());
+            string_entries.insert( (rows,*colidx), val);
+        }
+        for (key,count) in key_counts{
+            let colsize = name_to_col.len();
+            let colidx = name_to_col.entry(key.to_string()).or_insert(colsize);
+            col_to_name.insert(*colidx,key.to_string());
+            string_entries.insert( (rows,*colidx), count.to_string());
         }
     }
 
@@ -147,7 +153,7 @@ pub fn load_table_from_kvc_stream<B:BufRead> (
 
     return ( 
         (rows,cols),
-        data_entries.into_iter().map(|x| x).collect(),
+        string_entries.into_iter().collect(),
         col_names 
     )
 }
@@ -155,7 +161,7 @@ pub fn load_table_from_kvc_stream<B:BufRead> (
 pub fn load_table_from_kvc_stream_default<B:BufRead> (lines_input:Lines<B>)->
 (
     (usize,usize),
-    Vec<((usize,usize),f32)> , // data_entries
+    Vec<((usize,usize),String)> , //entries 
     Vec<String> // col_names
 )
 {

@@ -32,7 +32,7 @@ fn main()
     let (row_max,col_max) = size;
     
     //reorg for lookup
-    let mut lookup_entries : HashMap< (usize,usize), f32 > = HashMap::new();
+    let mut lookup_entries : HashMap< (usize,usize), String> = HashMap::new();
     for entry in entries{
         let (idx, val) = entry;
         lookup_entries.insert(idx, val);
@@ -51,7 +51,7 @@ fn main()
         for col in 0..col_max{
             if lookup_entries.contains_key( &(row,col) ){
                 let val = lookup_entries.get( &(row,col) ).unwrap();
-                write!(stdout()," {} ",std::format!("{:0.2}", val)).unwrap_or(());
+                write!(stdout()," {} ",std::format!("{}", val)).unwrap_or(());
             } else {
                 write!(stdout()," N/A ").unwrap_or(());
             }
