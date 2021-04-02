@@ -25,11 +25,11 @@ pub fn read_kvc_line_default( input_line: &String ) ->
     Vec<(String,String)>
 )
 {
-    read_kvc_line( input_line, &get_reserved_matchers())
+    read_kvc_line( input_line, &get_reserved_matchers(),&"")
 }
 
 //TODO 0.4: [x] return vec of tuples
-pub fn read_kvc_line( input_line: &String, keywords: &HashMap<String,regex::Regex> ) -> 
+pub fn read_kvc_line( line: &String, keywords: &HashMap<String,regex::Regex>, start_sequence: &str) -> 
 (
     Vec<(String,f32)>,
     Vec<(String,String)>
@@ -37,12 +37,20 @@ pub fn read_kvc_line( input_line: &String, keywords: &HashMap<String,regex::Rege
 {
     let mut line_strings: HashMap<String,String> = HashMap::new();
     let mut line_counter: HashMap<String,f32> = HashMap::new();
-    if input_line.len()==0 {
+    if line.len()==0 {
         return (
             line_counter.into_iter().map(|(key,val)| (key,val)).collect(),
             line_strings.into_iter().map(|(key,val)| (key,val)).collect(),
         );
     }
+    let input_line = match start_sequence.len()>0{
+        true=>{
+            let mut strings = line.split(start_sequence);
+            let _ = strings.next();
+            strings.collect()
+        },
+        false=>line.clone(),
+    };
     let mut tok_iter = input_line.split_whitespace();
     'nexttok: while let Some(kvpair) = tok_iter.next(){
 
@@ -93,7 +101,9 @@ pub fn read_kvc_line( input_line: &String, keywords: &HashMap<String,regex::Rege
 
 pub fn load_table_from_kvc_stream<B:BufRead> (
     lines_input:Lines<B>, 
-    keywords :&HashMap<String,regex::Regex> )->
+    keywords :&HashMap<String,regex::Regex> ,
+    start_sequence: &str
+)->
 (
     (usize,usize),  //size
     Vec<((usize,usize),f32)> , // data_entries
@@ -110,7 +120,7 @@ pub fn load_table_from_kvc_stream<B:BufRead> (
             Ok(l)=>l,
             Err(_)=>"".to_string(),
         };
-        let (key_counts,_)=read_kvc_line(&line,&keywords);
+        let (key_counts,_)=read_kvc_line(&line,&keywords,start_sequence);
         if key_counts.len()> 0
         {
             rows+=1;
@@ -149,7 +159,7 @@ pub fn load_table_from_kvc_stream_default<B:BufRead> (lines_input:Lines<B>)->
     Vec<String> // col_names
 )
 {
-    return load_table_from_kvc_stream(lines_input, &get_reserved_matchers());
+    return load_table_from_kvc_stream(lines_input, &get_reserved_matchers(),&"");
 }
 
 #[cfg(test)]
