@@ -3,19 +3,70 @@ extern crate regex;
 use std::collections::HashMap;
 use std::io::BufRead;
 use std::io::Lines;
-
+/// Return the current version of the library as a String
+/// following semantic versioning, like this: "Major.Minor.Build"
+/// # Examples
+/// ```rust
+/// //Check we have the right version:
+/// assert_eq!(kvc::version(),"0.5.1");
+/// ```
 pub fn version() -> String{
-    return "0.4.0".to_string();
+    return "0.5.1".to_string();
 }
 
-// OK 0.4
-pub fn get_reserved_matchers() -> HashMap<String,regex::Regex>
+/// Get the reserved keyword matchers as a HashMap<String,regex::Regex> 
+/// You can add to this to change the way text is parsed 
+/// 
+/// For each whitespace delimited token in the line, see if the regex matches
+/// it. If it does, that token is added as a "String" key,value pair under the
+/// corresponding name.
+/// 
+/// Default matchers pull out "Date" fields of the form YYYY-MM-DD and return
+/// tuples of the form ("Date",<date string>)
+/// 
+/// You can add regexes and names by inserting into the returned hashmap and 
+/// passing that to all kvc:: functions
+/// 
+/// # Examples
+/// 
+/// The default result
+/// 
+/// ```rust
+///  let (counts,strs) =kvc::read_kvc_line_default(&"    2021-01-01 ".to_string());
+///  assert_eq!(strs.len(),1);
+///  assert_eq!(counts.len(),0);
+///  assert_eq!(strs[0],("Date".to_string(),"2021-01-01".to_string()));
+/// ```
+/// 
+/// Adding a custom keyword matcher:
+/// ```rust
+///     let mut keywords = kvc::get_reserved_matchers();
+///     keywords.push(
+///         ( "One-plus-one".to_string(), regex::Regex::new(r"^\d{1}\+\d{1}$").unwrap()) );
+///     let (counts,strs) = kvc::read_kvc_line(&"    2021-01-01 \n 1+1   ".to_string(),&keywords,&"");
+///     assert_eq!(counts.len(),0);
+///     assert_eq!(strs.len(),2);
+///     assert_eq!(strs[0],("One-plus-one".to_string(),"1+1".to_string()));
+///     assert_eq!(strs[1],("Date".to_string(),"2021-01-01".to_string()));
+/// ```
+/// 
+/// # Returns
+/// 
+/// A keyword matcher, populated with the following matchers
+///  
+/// - {"^\d{4}-\d{2}-\d{2}" --> "Date"}
+/// 
+/// # See also
+/// 
+/// - [kvc::read_kvc_line]
+/// 
+pub fn get_reserved_matchers() -> Vec<(String,regex::Regex)>
 {
     let mut retvals:HashMap<String,regex::Regex> = HashMap::new();
     retvals.insert(
         "Date".to_string(),
         regex::Regex::new(r"^\d{4}-\d{2}-\d{2}$").unwrap());
-    retvals
+    retvals.into_iter().collect()
 }
 
 //TODO 0.4: [x] return vec of tuples
@@ -29,20 +80,20 @@ pub fn read_kvc_line_default( input_line: &String ) ->
 }
 
 //TODO 0.4: [x] return vec of tuples
-pub fn read_kvc_line( line: &String, keywords: &HashMap<String,regex::Regex>, start_sequence: &str) -> 
+pub fn read_kvc_line( line: &String, keywords: &Vec<(String,regex::Regex)>, start_sequence: &str) -> 
 (
     Vec<(String,f32)>,
     Vec<(String,String)>
 )
 {
-    let mut line_strings: HashMap<String,String> = HashMap::new();
-    let mut line_counter: HashMap<String,f32> = HashMap::new();
     if line.len()==0 {
         return (
-            line_counter.into_iter().map(|(key,val)| (key,val)).collect(),
-            line_strings.into_iter().map(|(key,val)| (key,val)).collect(),
+            vec![],
+            vec![]
         );
     }
+    let mut line_strings: HashMap<String,String> = HashMap::new();
+    let mut line_counter: HashMap<String,f32> = HashMap::new();
     let input_line = match start_sequence.len()>0{
         true=>{
             let mut strings = line.split(start_sequence);
@@ -94,14 +145,14 @@ pub fn read_kvc_line( line: &String, keywords: &HashMap<String,regex::Regex>, st
         }
     }
     return (
-        line_counter.into_iter().map(|(key,val)| (key,val)).collect(),
-        line_strings.into_iter().map(|(key,val)| (key,val)).collect(),
+        line_counter.into_iter().collect(),
+        line_strings.into_iter().collect(),
     );
 }
 
 pub fn load_table_from_kvc_stream<B:BufRead> (
     lines_input:Lines<B>, 
-    keywords :&HashMap<String,regex::Regex> ,
+    keywords :&Vec<(String,regex::Regex)> ,
     start_sequence: &str
 )->
 (
@@ -179,20 +230,36 @@ pub fn load_table_from_kvc_stream_default<B:BufRead> (lines_input:Lines<B>)->
 mod tests{
 use super::*;
 use std::io::Cursor;
+
     #[test]
-    fn test_keywords_are_returned(){
+    fn keywords_are_returned(){
         assert_eq!(get_reserved_matchers().len(),1);
+        let (name,_) = get_reserved_matchers().into_iter().next().unwrap();
+        assert_eq!(name,"Date");
     }
 
     #[test]
-    fn test_line_gets_date(){
+    fn line_accepts_keywords(){
+        let mut keywords = get_reserved_matchers();
+        keywords.push(
+            ( "One-plus-one".to_string(), regex::Regex::new(r"^\d{1}\+\d{1}$").unwrap()) );
+        let (counts,strs) =read_kvc_line(&"    2021-01-01 \n 1+1   ".to_string(),&keywords,&"");
+        assert_eq!(counts.len(),0);
+        assert_eq!(strs.len(),2);
+        assert_eq!(strs[0],("One-plus-one".to_string(),"1+1".to_string()));
+        assert_eq!(strs[1],("Date".to_string(),"2021-01-01".to_string()));
+    }
+
+    #[test]
+    fn line_gets_date(){
         let (counts,strs) =read_kvc_line_default(&"    2021-01-01 ".to_string());
         assert_eq!(strs.len(),1);
         assert_eq!(counts.len(),0);
+        assert_eq!(strs[0],("Date".to_string(),"2021-01-01".to_string()));
     }
 
     #[test]
-    fn test_line_counts_tokens(){
+    fn line_counts_tokens(){
         let (counts,strs) =read_kvc_line_default(&" A A A B  B C Z:4 Y:2 Y:3 ".to_string());
         assert_eq!(strs.len(),0);
         assert_eq!(counts.len(),5);
@@ -207,8 +274,9 @@ use std::io::Cursor;
             }
         }
     }
+
     #[test]
-    fn test_line_ignores_comments(){
+    fn line_ignores_comments(){
         let (counts,strs) =read_kvc_line_default(&" A # A A B  B C Z:4 Y:2 Y:3 ".to_string());
         assert_eq!(strs.len(),0);
         assert_eq!(counts.len(),1);
@@ -219,8 +287,9 @@ use std::io::Cursor;
             }
         }
     }
+
     #[test]
-    fn test_table_size(){
+    fn table_size(){
         let data =Cursor::new( "A # NO\n A A # \n A A A\n\n" );
         let ( (r,c) ,_entries,names)=load_table_from_kvc_stream_default(data.lines());
         assert_eq!(r,3);
@@ -229,7 +298,7 @@ use std::io::Cursor;
         assert_eq!(names.len(),c);
     }
     #[test]
-    fn test_date_matches_only_date(){
+    fn date_matches_only_date(){
         let data=Cursor::new(" 2021-01-01AAAAAA \n 2021-01-012021-01-02 \n 2021-02-02      ");
         let ((r,c), entries,names)=load_table_from_kvc_stream_default(data.lines());
         //should get three entries. Two weirdly named tokens and one Date
