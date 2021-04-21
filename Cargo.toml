@@ -1,12 +1,14 @@
 [package]
 name = "kvc"
-version = "0.5.2"
+version = "0.5.3"
 authors = ["Josh Vander Hook <josh@vanderhook.info>"]
 edition = "2018"
 description = "Very simple key-value-count tools to go from / to pandas data frames or streaming formats"
-license-file = "LICENSE"
+license = "MIT"
 readme = "README.md"
 homepage = "https://github.com/jodavaho/kvc"
+keywords = ["pandas","data-frame","streaming"]
+categories = ["science"]
 
 
 [dependencies]
