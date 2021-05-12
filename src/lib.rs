@@ -11,7 +11,7 @@ use std::io::Lines;
 /// assert_eq!(kvc::version(),"0.5.5");
 /// ```
 pub fn version() -> String{
-    return "0.5.6".to_string();
+    return "1.0.0".to_string();
 }
 
 /// Get the reserved keyword matchers as a HashMap<String,regex::Regex> 
