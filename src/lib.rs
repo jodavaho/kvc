@@ -8,10 +8,10 @@ use std::io::Lines;
 /// # Examples
 /// ```rust
 /// //Check we have the right version:
-/// assert_eq!(kvc::version(),"0.5.1");
+/// assert_eq!(kvc::version(),"0.5.5");
 /// ```
 pub fn version() -> String{
-    return "0.5.5".to_string();
+    return "0.5.6".to_string();
 }
 
 /// Get the reserved keyword matchers as a HashMap<String,regex::Regex> 
@@ -43,11 +43,17 @@ pub fn version() -> String{
 ///     let mut keywords = kvc::get_reserved_matchers();
 ///     keywords.push(
 ///         ( "One-plus-one".to_string(), regex::Regex::new(r"^\d{1}\+\d{1}$").unwrap()) );
-///     let (counts,strs) = kvc::read_kvc_line(&"    2021-01-01 \n 1+1   ".to_string(),&keywords,&"");
+///     let (counts,strs) =kvc::read_kvc_line(&"    2021-01-01 \n 1+1   ".to_string(),&keywords,&"");
 ///     assert_eq!(counts.len(),0);
 ///     assert_eq!(strs.len(),2);
-///     assert_eq!(strs[0],("One-plus-one".to_string(),"1+1".to_string()));
-///     assert_eq!(strs[1],("Date".to_string(),"2021-01-01".to_string()));
+///     for pairing in strs{
+///         let (name,val) = pairing;
+///         match &name[..]{
+///             "One-plus-one"=>assert_eq!(val,"1+1"),
+///             "Date"=>assert_eq!(val,"2021-01-01"),
+///             _=>assert!(false,"Unknown value!")
+///         }
+///     }
 /// ```
 /// 
 /// # Returns
@@ -246,8 +252,14 @@ use std::io::Cursor;
         let (counts,strs) =read_kvc_line(&"    2021-01-01 \n 1+1   ".to_string(),&keywords,&"");
         assert_eq!(counts.len(),0);
         assert_eq!(strs.len(),2);
-        assert_eq!(strs[0],("One-plus-one".to_string(),"1+1".to_string()));
-        assert_eq!(strs[1],("Date".to_string(),"2021-01-01".to_string()));
+        for pairing in strs{
+            let (name,val) = pairing;
+            match &name[..]{
+                "One-plus-one"=>assert_eq!(val,"1+1"),
+                "Date"=>assert_eq!(val,"2021-01-01"),
+                _=>assert!(false,"Unknown value!")
+            }
+        }
     }
 
     #[test]
