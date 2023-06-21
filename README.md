@@ -56,14 +56,14 @@ Running `<data.txt kvc-stream` produces:
 Running `cat data.txt | kvc-df` (or ` < data.txt kvc-df ` ) produces: 
 
 ```
-Idx  april_fools_pranks  this_twice  a    <weird-symbols_ar_ok!>  event  Date        a-third-key  key  this_has_occured_three_times  another_key
-1     0                   0          1     0                       0      0           0            0    0                             0 
-2     0                   0           0    0                      2       0           0            0    0                             0 
-3    4                    0           0    0                       0     2021-04-01   0            0    0                             0 
-4     0                  2            0   1                        0     2021-03-01  1            1    3                             1
-5     0                   0           0    0                       0     2021-04-02   0            0    0                             0 
+index  april_fools_pranks  this_twice  a  <weird-symbols_ar_ok!>  event  Date        a-third-key  key  this_has_occured_three_times  another_key
+1      0                   0           1  0                       0      0           0            0    0                             0
+2      0                   0           0  0                       2      0           0            0    0                             0
+3      4                   0           0  0                       0      2021-04-01  0            0    0                             0
+4      0                   2           0  1                       0      2021-03-01  1            1    3                             1
+5      0                   0           0  0                       0      2021-04-02  0            0    0                             0
 ```
 
-OK, so I actually aligned the text with ` cat data.txt | kvc-dv | column -t `
+OK, so I actually aligned the text and output an index with ` cat data.txt | kvc-df -i | column -t `
 
 I use this to keep a journal of events and easily scrape it for analysis in other programs or databases. 

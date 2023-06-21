@@ -8,10 +8,10 @@ use std::io::Lines;
 /// # Examples
 /// ```rust
 /// //Check we have the right version:
-/// assert_eq!(kvc::version(),"0.5.5");
+/// assert_eq!(kvc::version(),"1.1.3");
 /// ```
 pub fn version() -> String{
-    return "1.1.1".to_string();
+    return "1.1.3".to_string();
 }
 
 /// Get the reserved keyword matchers as a HashMap<String,regex::Regex> 
