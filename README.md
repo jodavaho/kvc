@@ -57,11 +57,11 @@ Running `cat data.txt | kvc-df` (or ` < data.txt kvc-df ` ) produces:
 
 ```
 Idx  april_fools_pranks  this_twice  a    <weird-symbols_ar_ok!>  event  Date        a-third-key  key  this_has_occured_three_times  another_key
-1    N/A                 N/A         1    N/A                     N/A    N/A         N/A          N/A  N/A                           N/A
-2    N/A                 N/A         N/A  N/A                     2      N/A         N/A          N/A  N/A                           N/A
-3    4                   N/A         N/A  N/A                     N/A    2021-04-01  N/A          N/A  N/A                           N/A
-4    N/A                 2           N/A  1                       N/A    2021-03-01  1            1    3                             1
-5    N/A                 N/A         N/A  N/A                     N/A    2021-04-02  N/A          N/A  N/A                           N/A
+1     0                   0          1     0                       0      0           0            0    0                             0 
+2     0                   0           0    0                      2       0           0            0    0                             0 
+3    4                    0           0    0                       0     2021-04-01   0            0    0                             0 
+4     0                  2            0   1                        0     2021-03-01  1            1    3                             1
+5     0                   0           0    0                       0     2021-04-02   0            0    0                             0 
 ```
 
 OK, so I actually aligned the text with ` cat data.txt | kvc-dv | column -t `
